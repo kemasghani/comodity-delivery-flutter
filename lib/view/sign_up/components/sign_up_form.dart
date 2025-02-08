@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../controllers/user_controller.dart';
+import '../../../controllers/sign_up_controller.dart';
 
 class SignUpForm extends StatefulWidget {
   @override

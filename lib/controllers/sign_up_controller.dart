@@ -1,4 +1,4 @@
-import '../services/supabase_service.dart';
+import '../services/sign_up_service.dart';
 import '../models/user_model.dart';
 
 class UserController {
