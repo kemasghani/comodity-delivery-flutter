@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shop_app/view/edit_profile/edit_profile_screen.dart';
 
 import 'components/profile_menu.dart';
 import 'components/profile_pic.dart';
@@ -7,6 +8,7 @@ class ProfileScreen extends StatelessWidget {
   static String routeName = "/profile";
 
   const ProfileScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,7 +24,9 @@ class ProfileScreen extends StatelessWidget {
             ProfileMenu(
               text: "My Account",
               icon: "assets/icons/User Icon.svg",
-              press: () => {},
+              press: () {
+                Navigator.pushNamed(context, EditProfileScreen.routeName);
+              },
             ),
             ProfileMenu(
               text: "Notifications",

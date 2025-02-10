@@ -14,6 +14,7 @@ class _SignUpFormState extends State<SignUpForm> {
   String email = "";
   String address = "";
   String password = "";
+  String confirmPassword = "";
 
   void _signUp() async {
     if (_formKey.currentState!.validate()) {
@@ -23,7 +24,7 @@ class _SignUpFormState extends State<SignUpForm> {
 
       if (user != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Sign up successful! Welcome, ${user.name}")),
+          SnackBar(content: Text("Sign up successful! Welcome, \${user.name}")),
         );
         // Navigate to home or login screen
       } else {
@@ -43,19 +44,45 @@ class _SignUpFormState extends State<SignUpForm> {
           TextFormField(
             decoration: InputDecoration(labelText: "Full Name"),
             onSaved: (value) => name = value!,
+            validator: (value) =>
+                value!.isEmpty ? "Please enter your name" : null,
           ),
+          SizedBox(height: 16),
           TextFormField(
             decoration: InputDecoration(labelText: "Email"),
             onSaved: (value) => email = value!,
+            validator: (value) =>
+                value!.isEmpty ? "Please enter your email" : null,
           ),
+          SizedBox(height: 16),
           TextFormField(
             decoration: InputDecoration(labelText: "Address"),
             onSaved: (value) => address = value!,
+            validator: (value) =>
+                value!.isEmpty ? "Please enter your address" : null,
           ),
+          SizedBox(height: 16),
           TextFormField(
             decoration: InputDecoration(labelText: "Password"),
             obscureText: true,
             onSaved: (value) => password = value!,
+            validator: (value) {
+              if (value!.isEmpty) return "Please enter your password";
+              if (value.length < 8)
+                return "Password must be at least 8 characters";
+              return null;
+            },
+          ),
+          SizedBox(height: 16),
+          TextFormField(
+            decoration: InputDecoration(labelText: "Confirm Password"),
+            obscureText: true,
+            onSaved: (value) => confirmPassword = value!,
+            validator: (value) {
+              if (value!.isEmpty) return "Please confirm your password";
+              if (value != password) return "Passwords do not match";
+              return null;
+            },
           ),
           SizedBox(height: 20),
           ElevatedButton(
