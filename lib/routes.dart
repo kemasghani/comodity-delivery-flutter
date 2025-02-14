@@ -13,9 +13,8 @@ import 'view/profile/profile_screen.dart';
 import 'view/sign_in/sign_in_screen.dart';
 import 'view/sign_up/sign_up_screen.dart';
 import 'view/splash/splash_screen.dart';
+import 'view/reset_password/reset_password_screen.dart';
 
-// We use name route
-// All our routes will be available here
 final Map<String, WidgetBuilder> routes = {
   InitScreen.routeName: (context) => const InitScreen(),
   SplashScreen.routeName: (context) => const SplashScreen(),
@@ -24,11 +23,17 @@ final Map<String, WidgetBuilder> routes = {
   LoginSuccessScreen.routeName: (context) => const LoginSuccessScreen(),
   SignUpScreen.routeName: (context) => const SignUpScreen(),
   CompleteProfileScreen.routeName: (context) => const CompleteProfileScreen(),
-  OtpScreen.routeName: (context) => const OtpScreen(),
+  OtpScreen.routeName: (context) {
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final email = args?['email'] ?? ''; // ✅ Extract email safely
+    return OtpScreen(email: email);
+  },
   HomeScreen.routeName: (context) => const HomeScreen(),
   ProductsScreen.routeName: (context) => const ProductsScreen(),
   DetailsScreen.routeName: (context) => const DetailsScreen(),
   CartScreen.routeName: (context) => const CartScreen(),
   ProfileScreen.routeName: (context) => const ProfileScreen(),
-  EditProfileScreen.routeName: (context) => EditProfileScreen(), // Added route
+  EditProfileScreen.routeName: (context) => EditProfileScreen(),
+  ResetPasswordScreen.routeName: (context) => ResetPasswordScreen(),
 };

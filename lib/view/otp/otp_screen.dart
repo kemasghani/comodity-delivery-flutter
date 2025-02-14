@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-
 import '../../constants.dart';
-
 import 'components/otp_form.dart';
 
 class OtpScreen extends StatelessWidget {
   static String routeName = "/otp";
+  final String email; // Add this
 
-  const OtpScreen({super.key});
+  const OtpScreen({super.key, required this.email}); // Update constructor
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,11 +26,11 @@ class OtpScreen extends StatelessWidget {
                   "OTP Verification",
                   style: headingStyle,
                 ),
-                const Text("We sent your code to +1 898 860 ***"),
+                Text("We sent your code to $email"), // Display email
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("This code will expired in "),
+                    const Text("This code will expire in "),
                     TweenAnimationBuilder(
                       tween: Tween(begin: 30.0, end: 0.0),
                       duration: const Duration(seconds: 30),
@@ -41,7 +41,7 @@ class OtpScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                const OtpForm(),
+                OtpForm(email: email), // Pass email to OtpForm
                 const SizedBox(height: 20),
                 GestureDetector(
                   onTap: () {
