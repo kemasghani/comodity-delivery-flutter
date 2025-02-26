@@ -20,10 +20,11 @@ class _MapScreenState extends State<MapScreen> {
   late GoogleMapController _mapController;
   final MapController _mapControllerClass = MapController();
 
+  Timer? _dragTimer;
   Set<Marker> _markers = {};
   Polyline? _routePolyline;
   bool _trafficEnabled = false;
-
+  String _driverAddress = 'Get driver address...';
   GoogleMapController? _controller;
   LatLng? _selectedPosition;
   bool _isMapLoaded = false;
@@ -73,9 +74,22 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
-  void _findDriver() async {
-    LatLng? userPosition =
-        await _getUserCurrentLocation(); // Get user location dynamically
+  Future<String?> _getDriverAddress() async {
+    String? fetchedAddress =
+        await _mapControllerClass.fetchDriverAddress(); // Get address
+
+    if (fetchedAddress != null && fetchedAddress.isNotEmpty) {
+      setState(() {
+        _driverAddress = fetchedAddress; // Update state and re-render UI
+      });
+      print("✅ Success: Driver address is $_driverAddress.");
+    } else {
+      print("❌ Failed to get driver location.");
+    }
+  }
+
+  Future<void> _findDriver() async {
+    LatLng? userPosition = await _getUserCurrentLocation();
     if (userPosition != null) {
       await _mapControllerClass.findNearestDriver(userPosition);
       _updateMarkers();
@@ -348,7 +362,7 @@ class _MapScreenState extends State<MapScreen> {
 
                 // Address Display Above "Continue Order"
                 Positioned(
-                  bottom: 80,
+                  bottom: _mapControllerClass.isSearchEnabled ? 80 : 135,
                   left: 20,
                   right: 20,
                   child: Container(
@@ -388,32 +402,86 @@ class _MapScreenState extends State<MapScreen> {
                   ),
                 ),
 
-                // Confirm Selection Button
-                Positioned(
-                  bottom: 20,
-                  left: 20,
-                  right: 20,
-                  child: Column(
-                    children: [
-                      if (_mapControllerClass.isSearchEnabled)
-                        ElevatedButton(
-                          onPressed: () {
-                            _findDriver(); // Find a driver
-                            _adjustMapView(); // Auto-adjust map view
-                            print("✅ Finding driver & adjusting map...");
-                          },
-                          child: Text("Continue Order"),
-                        ),
-                      if (_mapControllerClass.isDriverAssigned)
-                        ElevatedButton(
-                          onPressed: _cancelOrder,
-                          child: Text("Cancel Order"),
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red),
-                        ),
-                    ],
+                //  driver Address Display
+                if (!_mapControllerClass.isSearchEnabled)
+                  Positioned(
+                    bottom: 80,
+                    left: 20,
+                    right: 20,
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black26, blurRadius: 5),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.location_on, color: Colors.blue),
+                          const SizedBox(width: 5),
+                          Expanded(
+                            child: Text(
+                              _driverAddress,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(fontSize: 14),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+
+                if (_mapControllerClass.isSearchEnabled)
+                  // Confirm Selection Button
+                  Positioned(
+                    bottom: 20,
+                    left: 20,
+                    right: 20,
+                    child: Column(
+                      children: [
+                        if (_mapControllerClass.isSearchEnabled)
+                          ElevatedButton(
+                            onPressed: () async {
+                              await _findDriver(); // Find a driver
+                              await _getDriverAddress();
+                              print("✅ Finding driver & adjusting map...");
+                            },
+                            child: Text("Find driver"),
+                          ),
+                      ],
+                    ),
+                  ),
+
+                if (_mapControllerClass.isDriverAssigned)
+                  Positioned(
+                    bottom: 20,
+                    left: 20,
+                    right: 20,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: _cancelOrder,
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red),
+                            child: Text("Cancel Order"),
+                          ),
+                        ),
+                        SizedBox(width: 20),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: _cancelOrder,
+                            child: Text("Continue"),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
               ],
             )
           : const Center(child: CircularProgressIndicator()),

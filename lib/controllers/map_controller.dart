@@ -25,6 +25,7 @@ class MapController {
   List<LatLng> get routePolyline => _routePolyline;
   String? get driverAddress => _driverAddress;
 
+
   /// 🔍 Find the nearest driver based on Google Distance Matrix API
   Future<void> findNearestDriver(LatLng userPosition) async {
     _currentPosition = userPosition;
@@ -69,14 +70,21 @@ class MapController {
   }
 
   /// 🌍 Fetch the driver's address separately
-  Future<void> fetchDriverAddress() async {
-    if (_driverPosition != null) {
-      _driverAddress =
-          await _placesService.getAddressFromCoordinates(_driverPosition!);
-      print("🏠 Driver Address: $_driverAddress");
-    } else {
-      print("⚠️ Cannot fetch address, driver position is null.");
+  Future<String?> fetchDriverAddress() async {
+    if (_driverPosition == null) {
+      print("❌ No driver position available.");
+      return null;
     }
+
+    // Fetch address using Google Places API (or Geocoding API)
+    String? address =
+        await _placesService.getAddressFromCoordinates(_driverPosition!);
+
+    // Store value
+    _driverAddress = address;
+    print("📍 Driver Address: $_driverAddress");
+
+    return _driverAddress; // Return the address
   }
 
   /// Helper function to find the nearest driver using Google Distance Matrix API
