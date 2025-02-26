@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shop_app/view/map/map_screen.dart'; // Import MapScreen
 
 import 'components/categories.dart';
 import 'components/discount_banner.dart';
@@ -10,21 +11,38 @@ class HomeScreen extends StatelessWidget {
   static String routeName = "/home";
 
   const HomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 16),
           child: Column(
             children: [
-              HomeHeader(),
-              DiscountBanner(),
-              Categories(),
-              SpecialOffers(),
-              SizedBox(height: 20),
-              PopularProducts(),
-              SizedBox(height: 20),
+              const HomeHeader(),
+              const DiscountBanner(),
+              const Categories(),
+              const SpecialOffers(),
+              const SizedBox(height: 20),
+              const PopularProducts(),
+              const SizedBox(height: 20),
+
+              // ✅ Button to Navigate to Map Screen
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, MapScreen.routeName);
+                },
+                style: ElevatedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  textStyle: const TextStyle(fontSize: 18),
+                  backgroundColor: Colors.blue, // Button color
+                ),
+                child: const Text("Open Map"),
+              ),
+
+              const SizedBox(height: 20),
             ],
           ),
         ),

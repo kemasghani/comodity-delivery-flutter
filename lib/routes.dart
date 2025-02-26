@@ -14,6 +14,7 @@ import 'view/sign_in/sign_in_screen.dart';
 import 'view/sign_up/sign_up_screen.dart';
 import 'view/splash/splash_screen.dart';
 import 'view/reset_password/reset_password_screen.dart';
+import 'view/map/map_screen.dart';
 
 final Map<String, WidgetBuilder> routes = {
   InitScreen.routeName: (context) => const InitScreen(),
@@ -36,4 +37,5 @@ final Map<String, WidgetBuilder> routes = {
   ProfileScreen.routeName: (context) => const ProfileScreen(),
   EditProfileScreen.routeName: (context) => EditProfileScreen(),
   ResetPasswordScreen.routeName: (context) => ResetPasswordScreen(),
+  MapScreen.routeName: (context) => const MapScreen(),
 };

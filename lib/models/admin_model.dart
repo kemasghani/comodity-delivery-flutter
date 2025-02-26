@@ -1,25 +1,26 @@
-class UserModel {
-  final String id;
+class Admin {
+  final int id;
   final String name;
-  final String? address;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
-  UserModel({
+  Admin({
     required this.id,
     required this.name,
-    this.address,
     this.createdAt,
     this.updatedAt,
   });
 
-  factory UserModel.fromJson(Map<String, dynamic> json) {
-    return UserModel(
+  factory Admin.fromJson(Map<String, dynamic> json) {
+    return Admin(
       id: json['id'],
       name: json['name'],
-      address: json['addr'],
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
-      updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'])
+          : null,
     );
   }
 
@@ -27,7 +28,6 @@ class UserModel {
     return {
       'id': id,
       'name': name,
-      'addr': address,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
