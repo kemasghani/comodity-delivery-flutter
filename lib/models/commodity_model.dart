@@ -1,4 +1,4 @@
-class CommodityCategory {
+class Commodity {
   final int id;
   final String name;
   final String description;
@@ -6,7 +6,7 @@ class CommodityCategory {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
-  CommodityCategory({
+  Commodity({
     required this.id,
     required this.name,
     required this.description,
@@ -15,8 +15,8 @@ class CommodityCategory {
     this.updatedAt,
   });
 
-  factory CommodityCategory.fromJson(Map<String, dynamic> json) {
-    return CommodityCategory(
+  factory Commodity.fromJson(Map<String, dynamic> json) {
+    return Commodity(
       id: json['id'],
       name: json['name'],
       description: json['description'],

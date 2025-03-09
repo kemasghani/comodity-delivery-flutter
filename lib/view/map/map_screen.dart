@@ -20,7 +20,7 @@ class _MapScreenState extends State<MapScreen> {
   late GoogleMapController _mapController;
   final MapController _mapControllerClass = MapController();
 
-  Timer? _dragTimer;
+  LatLng? _draggedMarkerPosition;
   Set<Marker> _markers = {};
   Polyline? _routePolyline;
   bool _trafficEnabled = false;
@@ -39,39 +39,6 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     _requestLocationPermission();
-    _updateMarkers();
-  }
-
-  void _updateMarkers() {
-    setState(() {
-      _markers.clear();
-
-      // Check if user position is available
-      if (_mapControllerClass.currentPosition != null) {
-        _markers.add(
-          Marker(
-            markerId: MarkerId('user_location'),
-            position:
-                _mapControllerClass.currentPosition!, // Ensure it's not null
-            draggable: _mapControllerClass.isSearchEnabled,
-            infoWindow: InfoWindow(title: "Your Location"),
-          ),
-        );
-      }
-
-      // Check if driver position is available
-      if (_mapControllerClass.driverPosition != null) {
-        _markers.add(
-          Marker(
-            markerId: MarkerId('driver_location'),
-            position: _mapControllerClass.driverPosition!,
-            icon:
-                BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-            infoWindow: InfoWindow(title: "Driver's Location"),
-          ),
-        );
-      }
-    });
   }
 
   Future<String?> _getDriverAddress() async {
@@ -89,13 +56,18 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _findDriver() async {
-    LatLng? userPosition = await _getUserCurrentLocation();
-    if (userPosition != null) {
-      await _mapControllerClass.findNearestDriver(userPosition);
-      _updateMarkers();
-    } else {
-      print("❌ Failed to get user location.");
+    if (_draggedMarkerPosition == null) {
+      await _mapControllerClass.findNearestDriver(_selectedPosition!);
     }
+    print("🚀 Finding driver with location: $_draggedMarkerPosition");
+
+    if (_draggedMarkerPosition == null) {
+      print("⏳ Waiting for user to drag the marker...");
+      return; // Prevent calling API with null location
+    }
+
+    await _mapControllerClass
+        .findNearestDriver(_draggedMarkerPosition ?? _selectedPosition!);
   }
 
   void _adjustMapView() {
@@ -140,18 +112,11 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  void _enableTraffic() {
-    setState(() {
-      _trafficEnabled = true;
-    });
-  }
-
   void _cancelOrder() {
     setState(() {
       _mapControllerClass.resetMap();
       _trafficEnabled = false;
       _routePolyline = null;
-      _updateMarkers();
     });
   }
 
@@ -187,14 +152,16 @@ class _MapScreenState extends State<MapScreen> {
 
   void _onMarkerDragged(LatLng newPosition) {
     _updateTimer?.cancel();
-
+    setState(() {
+      _draggedMarkerPosition = newPosition;
+    });
     _updateTimer = Timer(const Duration(seconds: 1), () {
       setState(() {
         _selectedPosition = newPosition;
         print("📍 New Location: $_selectedPosition");
       });
 
-      _fetchAddress(newPosition);
+      _fetchAddress(_selectedPosition!);
     });
   }
 
@@ -240,6 +207,7 @@ class _MapScreenState extends State<MapScreen> {
 
       _controller?.animateCamera(CameraUpdate.newLatLng(coordinates));
       _fetchAddress(coordinates);
+      print("test lokasi : $coordinates");
     }
   }
 
@@ -446,7 +414,7 @@ class _MapScreenState extends State<MapScreen> {
                         if (_mapControllerClass.isSearchEnabled)
                           ElevatedButton(
                             onPressed: () async {
-                              await _findDriver(); // Find a driver
+                              await _findDriver();
                               await _getDriverAddress();
                               print("✅ Finding driver & adjusting map...");
                             },

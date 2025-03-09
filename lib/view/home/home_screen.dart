@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shop_app/view/add_order/add_order_screen.dart';
 import 'package:shop_app/view/map/map_screen.dart'; // Import MapScreen
 
 import 'components/categories.dart';
@@ -31,7 +32,7 @@ class HomeScreen extends StatelessWidget {
               // ✅ Button to Navigate to Map Screen
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, MapScreen.routeName);
+                  Navigator.pushNamed(context, AddOrderScreen.routeName);
                 },
                 style: ElevatedButton.styleFrom(
                   padding:
@@ -39,7 +40,7 @@ class HomeScreen extends StatelessWidget {
                   textStyle: const TextStyle(fontSize: 18),
                   backgroundColor: Colors.blue, // Button color
                 ),
-                child: const Text("Open Map"),
+                child: const Text("Add Order"),
               ),
 
               const SizedBox(height: 20),

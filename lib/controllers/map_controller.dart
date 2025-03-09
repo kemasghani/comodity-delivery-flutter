@@ -25,6 +25,16 @@ class MapController {
   List<LatLng> get routePolyline => _routePolyline;
   String? get driverAddress => _driverAddress;
 
+  // Setter methods
+  void setUserPosition(LatLng newPosition) {
+    _currentPosition = newPosition;
+    print("✅ User position updated: $newPosition");
+  }
+
+  void setDriverPosition(LatLng newPosition) {
+    _driverPosition = newPosition;
+    print("✅ Driver position updated: $newPosition");
+  }
 
   /// 🔍 Find the nearest driver based on Google Distance Matrix API
   Future<void> findNearestDriver(LatLng userPosition) async {
