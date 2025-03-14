@@ -1,14 +1,14 @@
 class ServiceRequestCommodityModel {
-  final String id;
-  final String serviceRequestId;
-  final String commodityId;
+  final int? id;
+  final int? serviceRequestId;
+  final int commodityId;
   final num quantity;
   final num? weight;
   final DateTime? createdAt;
 
   ServiceRequestCommodityModel({
-    required this.id,
-    required this.serviceRequestId,
+    this.id,
+    this.serviceRequestId,
     required this.commodityId,
     required this.quantity,
     this.weight,

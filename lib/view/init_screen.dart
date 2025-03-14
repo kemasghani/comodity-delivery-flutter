@@ -1,9 +1,7 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shop_app/constants.dart';
-import 'package:shop_app/view/favorite/favorite_screen.dart';
+import 'package:shop_app/view/history/order_history_screen.dart';
 import 'package:shop_app/view/home/home_screen.dart';
 import 'package:shop_app/view/profile/profile_screen.dart';
 
@@ -27,13 +25,10 @@ class _InitScreenState extends State<InitScreen> {
     });
   }
 
-  final pages = [
+  final List<Widget> pages = [
     const HomeScreen(),
-    const FavoriteScreen(),
-    const Center(
-      child: Text("Chat"),
-    ),
-    const ProfileScreen()
+    OrderHistoryScreen(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -49,14 +44,14 @@ class _InitScreenState extends State<InitScreen> {
         items: [
           BottomNavigationBarItem(
             icon: SvgPicture.asset(
-              "assets/icons/Shop Icon.svg",
+              "assets/icons/home_icon.svg",
               colorFilter: const ColorFilter.mode(
                 inActiveIconColor,
                 BlendMode.srcIn,
               ),
             ),
             activeIcon: SvgPicture.asset(
-              "assets/icons/Shop Icon.svg",
+              "assets/icons/home_icon.svg",
               colorFilter: const ColorFilter.mode(
                 kPrimaryColor,
                 BlendMode.srcIn,
@@ -66,14 +61,14 @@ class _InitScreenState extends State<InitScreen> {
           ),
           BottomNavigationBarItem(
             icon: SvgPicture.asset(
-              "assets/icons/Heart Icon.svg",
+              "assets/icons/history_icon.svg",
               colorFilter: const ColorFilter.mode(
                 inActiveIconColor,
                 BlendMode.srcIn,
               ),
             ),
             activeIcon: SvgPicture.asset(
-              "assets/icons/Heart Icon.svg",
+              "assets/icons/history_icon.svg",
               colorFilter: const ColorFilter.mode(
                 kPrimaryColor,
                 BlendMode.srcIn,
@@ -83,37 +78,20 @@ class _InitScreenState extends State<InitScreen> {
           ),
           BottomNavigationBarItem(
             icon: SvgPicture.asset(
-              "assets/icons/Chat bubble Icon.svg",
+              "assets/icons/user_icon.svg",
               colorFilter: const ColorFilter.mode(
                 inActiveIconColor,
                 BlendMode.srcIn,
               ),
             ),
             activeIcon: SvgPicture.asset(
-              "assets/icons/Chat bubble Icon.svg",
+              "assets/icons/user_icon.svg",
               colorFilter: const ColorFilter.mode(
                 kPrimaryColor,
                 BlendMode.srcIn,
               ),
             ),
-            label: "Chat",
-          ),
-          BottomNavigationBarItem(
-            icon: SvgPicture.asset(
-              "assets/icons/User Icon.svg",
-              colorFilter: const ColorFilter.mode(
-                inActiveIconColor,
-                BlendMode.srcIn,
-              ),
-            ),
-            activeIcon: SvgPicture.asset(
-              "assets/icons/User Icon.svg",
-              colorFilter: const ColorFilter.mode(
-                kPrimaryColor,
-                BlendMode.srcIn,
-              ),
-            ),
-            label: "Fav",
+            label: "User",
           ),
         ],
       ),

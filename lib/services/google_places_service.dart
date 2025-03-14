@@ -6,10 +6,12 @@ import '../models/driver_model.dart';
 class GooglePlacesService {
   final String _apiKey = "AIzaSyBEfLs7xWM8RFVNsWIrbkaGF8lD2WvU6n0";
 
-  Future<Driver> getNearestDriver(LatLng userPosition, List<Driver> drivers) async {
-    String destinations = drivers
-        .map((d) => "${d.latitude},${d.longitude}")
-        .join("|");
+  Future<Map<String, dynamic>?> getNearestDriver(
+      LatLng userPosition, List<Driver> drivers) async {
+    if (drivers.isEmpty) return null;
+
+    String destinations =
+        drivers.map((d) => "${d.latitude},${d.longitude}").join("|");
 
     final String url =
         "https://maps.googleapis.com/maps/api/distancematrix/json?"
@@ -38,20 +40,23 @@ class GooglePlacesService {
             }
           }
 
-          return drivers[minIndex]; // Return the closest driver
+          double distanceKm = minDistance / 1000; // Convert meters to km
+          return {
+            "driver": drivers[minIndex],
+            "distance": distanceKm,
+          };
         }
       }
     } catch (e) {
       print("⚠️ Error finding nearest driver: $e");
     }
 
-    return drivers.first; // Fallback: Return the first driver if API fails
+    return null; // Fallback if API fails
   }
 
   /// 🚗 Get Route Details (with updated user position)
   Future<Map<String, dynamic>> getRouteDetails(LatLng start, LatLng end) async {
-    final String url =
-        "https://maps.googleapis.com/maps/api/directions/json?"
+    final String url = "https://maps.googleapis.com/maps/api/directions/json?"
         "origin=${start.latitude},${start.longitude}"
         "&destination=${end.latitude},${end.longitude}"
         "&departure_time=now&traffic_model=best_guess"
@@ -112,6 +117,7 @@ class GooglePlacesService {
     }
     return points;
   }
+
   /// ✅ Convert LatLng to Address (Reverse Geocoding)
   Future<String> getAddressFromCoordinates(LatLng position) async {
     final String url =

@@ -14,7 +14,8 @@ class MapController {
   bool _trafficEnabled = false;
   double _distance = 0.0;
   List<LatLng> _routePolyline = [];
-  String? _driverAddress; // ✅ Store driver address
+  String? _driverAddress;
+  int? _driverId;
 
   LatLng? get currentPosition => _currentPosition;
   LatLng? get driverPosition => _driverPosition;
@@ -24,8 +25,8 @@ class MapController {
   double get distance => _distance;
   List<LatLng> get routePolyline => _routePolyline;
   String? get driverAddress => _driverAddress;
+  int? get driverId => _driverId; // ✅ Getter for driver ID
 
-  // Setter methods
   void setUserPosition(LatLng newPosition) {
     _currentPosition = newPosition;
     print("✅ User position updated: $newPosition");
@@ -36,7 +37,7 @@ class MapController {
     print("✅ Driver position updated: $newPosition");
   }
 
-  /// 🔍 Find the nearest driver based on Google Distance Matrix API
+  /// 🔍 Find the nearest driver and store the driver ID
   Future<void> findNearestDriver(LatLng userPosition) async {
     _currentPosition = userPosition;
 
@@ -50,21 +51,25 @@ class MapController {
 
     final drivers = await _driverService.getAvailableDrivers();
     if (drivers.isNotEmpty) {
-      Driver nearestDriver = await _getClosestDriver(drivers);
+      var result = await _getClosestDriver(drivers);
 
-      _driverPosition = LatLng(
-        nearestDriver.latitude,
-        nearestDriver.longitude,
-      );
+      Driver nearestDriver = result["driver"];
+      double distance = result["distance"];
 
+      _driverPosition = LatLng(nearestDriver.latitude, nearestDriver.longitude);
+      _driverId = nearestDriver.id; // ✅ Assign driver ID
+      _distance = distance; // ✅ Assign distance
+
+      print("🚖 Assigned Driver ID: $_driverId");
       print(
           "🚖 Driver Position: Latitude: ${_driverPosition!.latitude}, Longitude: ${_driverPosition!.longitude}");
+      print("📏 Distance to Driver: $_distance km");
 
       _isDriverAssigned = true;
       _isSearchEnabled = false;
       _trafficEnabled = true;
 
-      // ✅ Fetch driver address in a separate function
+      // ✅ Fetch driver address
       await fetchDriverAddress();
 
       // Get Route Details (Distance & Polyline)
@@ -72,7 +77,6 @@ class MapController {
           _currentPosition!, _driverPosition!);
       print("🛣️ Route details: $routeDetails");
 
-      _distance = routeDetails["distance"] ?? 0.0;
       _routePolyline = routeDetails["polyline"] ?? [];
     } else {
       print("⚠️ No available drivers found.");
@@ -94,23 +98,34 @@ class MapController {
     _driverAddress = address;
     print("📍 Driver Address: $_driverAddress");
 
-    return _driverAddress; // Return the address
+    return _driverAddress;
   }
 
-  /// Helper function to find the nearest driver using Google Distance Matrix API
-  Future<Driver> _getClosestDriver(List<Driver> drivers) async {
-    return await _placesService.getNearestDriver(_currentPosition!, drivers);
+  /// 🏁 Find the nearest driver and distance using Google Distance Matrix API
+  Future<Map<String, dynamic>> _getClosestDriver(List<Driver> drivers) async {
+    var nearestDriverData =
+        await _placesService.getNearestDriver(_currentPosition!, drivers);
+
+    if (nearestDriverData == null) {
+      throw Exception("No available drivers found.");
+    }
+
+    return {
+      "driver": nearestDriverData["driver"] as Driver, // ✅ Nearest driver
+      "distance": nearestDriverData["distance"] as double, // ✅ Distance in km
+    };
   }
 
   /// ❌ Reset map when user cancels order
   void resetMap() {
     _currentPosition = null;
     _driverPosition = null;
+    _driverId = null; // ✅ Reset driver ID
     _isDriverAssigned = false;
     _isSearchEnabled = true;
     _trafficEnabled = false;
     _routePolyline = [];
     _distance = 0.0;
-    _driverAddress = null; // ✅ Reset driver address
+    _driverAddress = null;
   }
 }

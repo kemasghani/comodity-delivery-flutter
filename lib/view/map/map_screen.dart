@@ -4,8 +4,12 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../services/google_places_service.dart';
+import '../../controllers/service_request_controller.dart';
 import '../../controllers/map_controller.dart';
-import 'dart:math';
+import '../../models/service_request_commodities_model.dart';
+import 'package:lottie/lottie.dart' hide Marker;
+import '../home/home_screen.dart';
+import '../../services/user_session.dart';
 
 class MapScreen extends StatefulWidget {
   static const String routeName = "/map";
@@ -19,7 +23,12 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   late GoogleMapController _mapController;
   final MapController _mapControllerClass = MapController();
+  final ServiceRequestController _serviceRequestController =
+      ServiceRequestController();
 
+  int? driverId;
+  double? _distance;
+  String? userId;
   LatLng? _draggedMarkerPosition;
   Set<Marker> _markers = {};
   Polyline? _routePolyline;
@@ -35,10 +44,155 @@ class _MapScreenState extends State<MapScreen> {
   String _currentAddress = "Loading address...";
   bool _isFetchingAddress = false;
 
+  List<Map<String, String>> wasteItems = [];
+
   @override
   void initState() {
     super.initState();
+    _loadUserId();
     _requestLocationPermission();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is List<Map<String, String>>) {
+      setState(() {
+        wasteItems = args;
+      });
+    }
+  }
+
+  Future<void> _loadUserId() async {
+    String? id = await UserSession().getUserId();
+    setState(() {
+      userId = id;
+    });
+  }
+
+  void _onConfirmOrderPressed() async {
+    if (_selectedPosition == null ||
+        driverId == null ||
+        _distance == null ||
+        userId == null) {
+      print("❌ Error: Missing required information.");
+      return;
+    }
+
+    // 🔍 Debugging: Print wasteItems before mapping
+    print("🗑 Waste Items:");
+    for (var item in wasteItems) {
+      print("  - $item");
+    }
+
+    try {
+      // ✅ Extract commodities safely, providing a default quantity
+      List<ServiceRequestCommodityModel> commodities = wasteItems.map((item) {
+        if (item["commodity_id"] == null || item["weight"] == null) {
+          throw Exception("Missing or null values in wasteItems: $item");
+        }
+
+        return ServiceRequestCommodityModel(
+          serviceRequestId: 0, // Dummy value (set by backend)
+          commodityId: int.tryParse(item["commodity_id"].toString()) ?? 0,
+          quantity: num.tryParse(item["quantity"]?.toString() ?? "1") ??
+              1, // ✅ Default to 1 if missing
+          weight: num.tryParse(item["weight"].toString()),
+          createdAt: DateTime.now(),
+        );
+      }).toList();
+
+      // ✅ Debug output after processing
+      print("📦 Extracted Commodities:");
+      for (var commodity in commodities) {
+        print("  - Commodity ID: ${commodity.commodityId}");
+        print("    Quantity: ${commodity.quantity}");
+        print("    Weight: ${commodity.weight ?? 'N/A'}");
+      }
+
+      // ✅ Confirm order
+      await _serviceRequestController.confirmOrder(
+        userId: userId!,
+        driverId: driverId!.toString(),
+        commodities: commodities,
+        distance: _distance!,
+      );
+
+      print("✅ Order submitted successfully.");
+      _showSuccessDialog();
+    } catch (e) {
+      print("❌ Error processing commodities: $e");
+    }
+  }
+
+  void _showSuccessDialog() {
+    showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // ✅ Animated Success Icon
+              Lottie.asset(
+                'assets/animations/success.json', // Make sure you have this Lottie animation
+                width: 120,
+                height: 120,
+                repeat: false,
+              ),
+              SizedBox(height: 20),
+              // ✅ Title
+              Text(
+                "Order Confirmed!",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 10),
+              // ✅ Subtitle
+              Text(
+                "Your order has been successfully submitted. We'll notify you when it's processed.",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[700],
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              SizedBox(height: 20),
+              // ✅ Confirm Button
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close modal
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                ),
+                child: Text(
+                  "OK",
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+              ),
+
+              SizedBox(height: 10),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<String?> _getDriverAddress() async {
@@ -56,48 +210,25 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _findDriver() async {
-    if (_draggedMarkerPosition == null) {
-      await _mapControllerClass.findNearestDriver(_selectedPosition!);
-    }
-    print("🚀 Finding driver with location: $_draggedMarkerPosition");
-
-    if (_draggedMarkerPosition == null) {
-      print("⏳ Waiting for user to drag the marker...");
-      return; // Prevent calling API with null location
-    }
-
-    await _mapControllerClass
-        .findNearestDriver(_draggedMarkerPosition ?? _selectedPosition!);
-  }
-
-  void _adjustMapView() {
-    if (_mapController == null ||
-        _mapControllerClass.currentPosition == null ||
-        _mapControllerClass.driverPosition == null) {
-      print("⚠️ Cannot adjust map: Missing locations or controller.");
+    if (_selectedPosition == null) {
+      print("❌ Error: No location selected.");
       return;
     }
 
-    LatLng userLocation = _mapControllerClass.currentPosition!;
-    LatLng driverLocation = _mapControllerClass.driverPosition!;
+    print("🚀 Finding driver for location: $_selectedPosition");
 
-    LatLngBounds bounds = LatLngBounds(
-      southwest: LatLng(
-        min(userLocation.latitude, driverLocation.latitude),
-        min(userLocation.longitude, driverLocation.longitude),
-      ),
-      northeast: LatLng(
-        max(userLocation.latitude, driverLocation.latitude),
-        max(userLocation.longitude, driverLocation.longitude),
-      ),
-    );
+    await _mapControllerClass.findNearestDriver(_selectedPosition!);
 
-    _mapController.animateCamera(
-      CameraUpdate.newLatLngBounds(
-          bounds, 100), // 100 = padding for better visibility
-    );
+    // ✅ Retrieve and print driver ID after finding nearest driver
+    driverId = _mapControllerClass.driverId;
+    _distance = _mapControllerClass.distance; // ✅ Assign distance
 
-    print("✅ Map adjusted to fit user & driver.");
+    if (driverId != null) {
+      print("✅ Assigned Driver ID: $driverId");
+      print("📏 Distance to Driver: $_distance km"); // ✅ Print distance
+    } else {
+      print("⚠️ No driver assigned.");
+    }
   }
 
 // Function to fetch user's current location
@@ -443,7 +574,7 @@ class _MapScreenState extends State<MapScreen> {
                         SizedBox(width: 20),
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: _cancelOrder,
+                            onPressed: _onConfirmOrderPressed,
                             child: Text("Continue"),
                           ),
                         )

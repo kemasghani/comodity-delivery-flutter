@@ -6,6 +6,7 @@ import '../../controllers/commodity_controllers.dart';
 import '../../models/commodity_model.dart';
 import './components/add_item_modal.dart';
 import './components/waste_item_card.dart';
+import '../map/map_screen.dart'; // Import Map Screen
 
 class AddOrderScreen extends StatefulWidget {
   static String routeName = "/add_order";
@@ -28,7 +29,6 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
     _loadWasteItems();
   }
 
-  // Fetch commodities once and store in state
   Future<void> _fetchCommodities() async {
     try {
       List<Commodity> data = await _commodityController.fetchCommodities();
@@ -40,7 +40,6 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
     }
   }
 
-  // Load stored waste items from local storage
   Future<void> _loadWasteItems() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? data = prefs.getString("waste_items");
@@ -51,13 +50,11 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
     }
   }
 
-  // Save waste items to local storage
   Future<void> _saveWasteItems() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString("waste_items", json.encode(wasteItems));
   }
 
-  // Remove an item and update local storage
   void _removeItem(int index) {
     setState(() {
       wasteItems.removeAt(index);
@@ -65,9 +62,8 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
     _saveWasteItems();
   }
 
-  // Show modal to add item
   void _showAddItemModal() async {
-    if (commodities.isEmpty) return; // Prevent modal from opening if no data
+    if (commodities.isEmpty) return;
 
     final result = await showModalBottomSheet(
       context: context,
@@ -78,8 +74,8 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
     if (result != null) {
       setState(() {
         wasteItems.add({
-          "commodity_id": result["commodity_id"], // Store only ID
-          "commodity_name": result["commodity_name"], // Display name
+          "commodity_id": result["commodity_id"],
+          "commodity_name": result["commodity_name"],
           "weight": result["weight"],
         });
       });
@@ -87,16 +83,24 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
     }
   }
 
+  void _confirmOrder() {
+    print("Confirming Order: $wasteItems");
+    Navigator.pushNamed(
+      context,
+      MapScreen.routeName,
+      arguments: wasteItems,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("List Waste Item")),
+      appBar: AppBar(title: const Text("List Waste Items")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Waste Item List
             Expanded(
               child: Container(
                 width: double.infinity,
@@ -112,8 +116,7 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
                         itemBuilder: (context, index) {
                           final item = wasteItems[index];
                           return WasteItemCard(
-                            classification:
-                                item["commodity_name"]!, // Show name
+                            classification: item["commodity_name"]!,
                             weight: item["weight"]!,
                             onRemove: () => _removeItem(index),
                           );
@@ -122,24 +125,13 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
               ),
             ),
             const SizedBox(height: 10),
-
-            // Add Item Button
-            Center(
-              child: IconButton(
-                icon: const Icon(Icons.add_circle_outline, size: 40),
-                onPressed: _showAddItemModal,
-              ),
+            FloatingActionButton(
+              onPressed: _showAddItemModal,
+              child: const Icon(Icons.add, size: 30),
             ),
             const SizedBox(height: 10),
-
-            // Confirm Order Button
             ElevatedButton(
-              onPressed: wasteItems.isEmpty
-                  ? null
-                  : () {
-                      print(
-                          "Confirming Order: $wasteItems"); // Send only IDs in request
-                    },
+              onPressed: wasteItems.isEmpty ? null : _confirmOrder,
               style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50)),
               child:
