@@ -10,18 +10,24 @@ class OrderHistoryController extends GetxController {
   var selectedOrder = Rxn<ServiceRequest>();
   var commodities = <ServiceRequestCommodityModel>[].obs;
   var isLoading = false.obs;
+  var orderDetail = Rxn<ServiceRequest>();
+  var orderCommodities = <ServiceRequestCommodityModel>[].obs;
 
+  /// Load order history for a user
   Future<void> loadOrderHistory(String userId) async {
-    isLoading.value = true;
-    orders.value = await _orderHistoryService.fetchOrderHistory(userId);
-    isLoading.value = false;
+    try {
+      isLoading.value = true;
+      print('Loading order history for userId: $userId');
+
+      final fetchedOrders =
+          await _orderHistoryService.fetchOrderHistory(userId);
+      orders.value = fetchedOrders;
+    } catch (e, stackTrace) {
+      print('Error loading order history: $e');
+      print(stackTrace);
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  Future<void> loadOrderDetails(int orderId) async {
-    isLoading.value = true;
-    selectedOrder.value = await _orderHistoryService.fetchOrderDetails(orderId);
-    commodities.value =
-        await _orderHistoryService.fetchOrderCommodities(orderId);
-    isLoading.value = false;
-  }
 }
