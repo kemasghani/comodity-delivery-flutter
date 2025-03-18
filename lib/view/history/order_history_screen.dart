@@ -5,6 +5,7 @@ import '../../controllers/order_history_controllers.dart';
 import 'order_detail_screen.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
+  static String routeName = "/order_history";
   @override
   _OrderHistoryScreenState createState() => _OrderHistoryScreenState();
 }

@@ -15,6 +15,7 @@ import 'view/sign_up/sign_up_screen.dart';
 import 'view/splash/splash_screen.dart';
 import 'view/reset_password/reset_password_screen.dart';
 import 'view/map/map_screen.dart';
+import 'view/history/order_history_screen.dart';
 import 'view/add_order/add_order_screen.dart';
 
 final Map<String, WidgetBuilder> routes = {
@@ -40,4 +41,5 @@ final Map<String, WidgetBuilder> routes = {
   ResetPasswordScreen.routeName: (context) => ResetPasswordScreen(),
   MapScreen.routeName: (context) => const MapScreen(),
   AddOrderScreen.routeName: (context) => AddOrderScreen(),
+  OrderHistoryScreen.routeName: (context) =>  OrderHistoryScreen(),
 };

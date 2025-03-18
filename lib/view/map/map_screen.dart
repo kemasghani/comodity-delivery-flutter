@@ -8,7 +8,7 @@ import '../../controllers/service_request_controller.dart';
 import '../../controllers/map_controller.dart';
 import '../../models/service_request_commodities_model.dart';
 import 'package:lottie/lottie.dart' hide Marker;
-import '../home/home_screen.dart';
+import '../history/order_history_screen.dart';
 import '../../services/user_session.dart';
 
 class MapScreen extends StatefulWidget {
@@ -121,6 +121,7 @@ class _MapScreenState extends State<MapScreen> {
 
       print("✅ Order submitted successfully.");
       _showSuccessDialog();
+      Navigator.pushNamed(context, OrderHistoryScreen.routeName);
     } catch (e) {
       print("❌ Error processing commodities: $e");
     }

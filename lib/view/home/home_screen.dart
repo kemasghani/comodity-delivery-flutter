@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shop_app/view/add_order/add_order_screen.dart';
-import 'package:shop_app/view/map/map_screen.dart'; // Import MapScreen
-
-import 'components/categories.dart';
 import 'components/discount_banner.dart';
 import 'components/home_header.dart';
-import 'components/popular_product.dart';
-import 'components/special_offers.dart';
 
 class HomeScreen extends StatelessWidget {
   static String routeName = "/home";
@@ -23,10 +18,7 @@ class HomeScreen extends StatelessWidget {
             children: [
               const HomeHeader(),
               const DiscountBanner(),
-              const Categories(),
-              const SpecialOffers(),
-              const SizedBox(height: 20),
-              const PopularProducts(),
+
               const SizedBox(height: 20),
 
               // ✅ Button to Navigate to Map Screen
