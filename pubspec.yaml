@@ -78,6 +78,7 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/animations/success.json
+    - assets/animations/check_payment.json
   fonts:
     - family: Muli
       fonts:

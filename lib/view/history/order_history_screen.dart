@@ -6,6 +6,7 @@ import 'order_detail_screen.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
   static String routeName = "/order_history";
+
   @override
   _OrderHistoryScreenState createState() => _OrderHistoryScreenState();
 }
@@ -13,7 +14,7 @@ class OrderHistoryScreen extends StatefulWidget {
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   final OrderHistoryController orderHistoryController =
       Get.put(OrderHistoryController());
-  String? userId; // Store user ID
+  String? userId;
 
   @override
   void initState() {
@@ -26,7 +27,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     String? storedUserId = await UserSession().getUserId();
 
     if (storedUserId != null) {
-      print("✅ User ID Found: $storedUserId"); // Debugging print
+      print("✅ User ID Found: $storedUserId");
       setState(() {
         userId = storedUserId;
       });
@@ -36,14 +37,52 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     }
   }
 
+  /// Function to get color based on order status
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'on progress':
+        return Colors.orange;
+      case 'done':
+        return Colors.green;
+      case 'canceled':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  /// Function to get payment badge
+  Widget _getPaymentStatusBadge(int paid) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: paid == 1
+            ? Colors.green.withOpacity(0.2)
+            : Colors.red.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        paid == 1 ? "Paid" : "Unpaid",
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: paid == 1 ? Colors.green : Colors.red,
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xFFF8F8F8), // Light background
       appBar: AppBar(
-        title: Text("Order History",
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          "Order History",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        ),
         centerTitle: true,
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Color(0xFFFF7642), // Orange color
         elevation: 0,
       ),
       body: Obx(() {
@@ -53,12 +92,15 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
         if (orderHistoryController.orders.isEmpty) {
           return Center(
-            child: Text("No orders found",
-                style: TextStyle(color: Colors.white, fontSize: 18)),
+            child: Text(
+              "No orders found",
+              style: TextStyle(color: Colors.black54, fontSize: 18),
+            ),
           );
         }
 
         return ListView.builder(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           itemCount: orderHistoryController.orders.length,
           itemBuilder: (context, index) {
             final order = orderHistoryController.orders[index];
@@ -67,36 +109,78 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
               onTap: () {
                 Get.to(() => OrderDetailScreen(orderId: order.id));
               },
-              child: Card(
-                margin: EdgeInsets.symmetric(vertical: 10),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                elevation: 5,
+              child: Container(
+                margin: EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 6,
+                      spreadRadius: 1,
+                    )
+                  ],
+                ),
                 child: ListTile(
                   contentPadding:
-                      EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   leading: CircleAvatar(
-                    backgroundColor: Colors.blueAccent,
+                    backgroundColor: Color(0xFFFF7642),
+                    radius: 24,
                     child: Icon(Icons.shopping_cart, color: Colors.white),
                   ),
-                  title: Text("Order #${order.id}",
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text("Status: ${order.status}",
-                      style: TextStyle(color: Colors.grey[600])),
-                  trailing: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  title: Text(
+                    "Order #${order.id}",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.arrow_forward_ios,
-                          size: 16, color: Colors.grey),
-                      SizedBox(height: 5),
-                      Text(
-                        order.createdAt != null
-                            ? "${order.createdAt!.toLocal()}"
-                            : "N/A",
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.access_time, size: 14, color: Colors.grey),
+                          SizedBox(width: 4),
+                          Text(
+                            order.createdAt != null
+                                ? "${order.createdAt!.toLocal()}"
+                                : "N/A",
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 6),
+                      Row(
+                        children: [
+                          // Status Badge
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: _getStatusColor(order.status)
+                                  .withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              order.status.toUpperCase(),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: _getStatusColor(order.status),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          // Payment Badge
+                          _getPaymentStatusBadge(order.paid),
+                        ],
                       ),
                     ],
                   ),
+                  trailing: Icon(Icons.arrow_forward_ios,
+                      size: 16, color: Colors.grey),
                 ),
               ),
             );

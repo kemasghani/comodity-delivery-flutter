@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:lottie/lottie.dart';
 import '../../services/order_history_service.dart';
 
 class OrderDetailScreen extends StatefulWidget {
@@ -30,7 +31,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     _loadOrderDetails();
   }
 
-  /// Fetch order details
   Future<void> _loadOrderDetails() async {
     final fetchedCommodities =
         await _orderHistoryService.fetchOrderDetails(widget.orderId);
@@ -41,7 +41,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     });
   }
 
-  /// Pick Image and Show Preview
   Future<void> _pickImage() async {
     final pickedFile =
         await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -52,7 +51,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }
   }
 
-  /// Upload Image to Supabase Storage and Update Database
   Future<void> _uploadImage() async {
     if (_selectedImage == null) return;
 
@@ -64,29 +62,24 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       final fileName =
           "paymentslip_${DateTime.now().millisecondsSinceEpoch}.jpg";
 
-      // Upload image to Supabase Storage
       await supabase.storage
           .from('paymentslips')
           .upload(fileName, _selectedImage!);
 
-      // Get the public URL of the uploaded image
       final publicUrl =
           supabase.storage.from('paymentslips').getPublicUrl(fileName);
 
-      // Update the service_requests table with the image URL
       await supabase.from('service_requests').update({
         'payment_image': publicUrl,
       }).eq('id', widget.orderId);
 
       setState(() {
         _uploadedImageUrl = publicUrl;
-        _selectedImage = null; // Reset after successful upload
+        _selectedImage = null;
         _isUploading = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Upload successful! Payment slip updated.")),
-      );
+      _showSuccessDialog();
     } catch (e) {
       setState(() {
         _isUploading = false;
@@ -96,6 +89,41 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         SnackBar(content: Text("Upload failed: $e")),
       );
     }
+  }
+
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Lottie.asset('assets/animations/check_payment.json',
+                    width: 150),
+                SizedBox(height: 12),
+                Text("Sukses upload struk pembayaran",
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                SizedBox(height: 8),
+                Text(
+                    "Harap tunggu konfirmasi dari admin dari struk pembayaran yang anda upload"),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("OK"),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -109,8 +137,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             Text("Order Details",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
-
-            // Order Details List
             Expanded(
               child: isLoading
                   ? Center(child: CircularProgressIndicator())
@@ -139,15 +165,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           },
                         ),
             ),
-
             SizedBox(height: 20),
             Divider(),
-
-            // Image Upload Section
             Text("Upload Payment Slip",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
-
             _selectedImage != null
                 ? Column(
                     children: [
@@ -165,10 +187,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     onPressed: _pickImage,
                     child: Text("Choose Image"),
                   ),
-
             SizedBox(height: 20),
-
-            // Show uploaded image from Supabase
             if (_uploadedImageUrl != null) ...[
               Text("Uploaded Image:",
                   style: TextStyle(fontWeight: FontWeight.bold)),

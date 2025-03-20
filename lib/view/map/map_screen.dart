@@ -121,7 +121,6 @@ class _MapScreenState extends State<MapScreen> {
 
       print("✅ Order submitted successfully.");
       _showSuccessDialog();
-      Navigator.pushNamed(context, OrderHistoryScreen.routeName);
     } catch (e) {
       print("❌ Error processing commodities: $e");
     }
@@ -174,6 +173,7 @@ class _MapScreenState extends State<MapScreen> {
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pop(); // Close modal
+                  Navigator.pushNamed(context, OrderHistoryScreen.routeName);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,

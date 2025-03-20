@@ -2,6 +2,7 @@ class ServiceRequest {
   final int id;
   final String userId;
   final String status;
+  final int paid;
   final String? paymentImage;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -10,6 +11,7 @@ class ServiceRequest {
     required this.id,
     required this.userId,
     required this.status,
+    required this.paid,
     this.paymentImage,
     this.createdAt,
     this.updatedAt,
@@ -20,6 +22,7 @@ class ServiceRequest {
       id: json['id'],
       userId: json['user_id'],
       status: json['status'],
+      paid: json['paid'],
       paymentImage: json['paymentImage'],
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
@@ -35,6 +38,7 @@ class ServiceRequest {
       'id': id,
       'user_id': userId,
       'status': status,
+      'paid': paid,
       'paymentImage': paymentImage,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
