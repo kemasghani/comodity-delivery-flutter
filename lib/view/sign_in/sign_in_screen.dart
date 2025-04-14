@@ -23,7 +23,7 @@ class SignInScreen extends StatelessWidget {
                 children: [
                   const SizedBox(height: 16),
                   const Text(
-                    "Welcome Back",
+                    "Welcome",
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 24,
@@ -31,7 +31,7 @@ class SignInScreen extends StatelessWidget {
                     ),
                   ),
                   const Text(
-                    "Sign in with your email and password  \nor continue with social media",
+                    "Sign in with your email and password",
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),

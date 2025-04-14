@@ -41,7 +41,7 @@ class ServiceRequestController {
     bool isSuccess = await _serviceRequestService.createServiceRequest(
       userId: userId,
       driverId: driverIdInt, // Pass as int ✅ FIXED
-      status: 'on progress',
+      status: 'pending',
       commodities: commodities,
       distance: distance,
     );

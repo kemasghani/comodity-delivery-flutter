@@ -10,6 +10,8 @@ import '../../models/service_request_commodities_model.dart';
 import 'package:lottie/lottie.dart' hide Marker;
 import '../history/order_history_screen.dart';
 import '../../services/user_session.dart';
+import 'package:shop_app/view/home/home_screen.dart';
+import 'package:shop_app/view/profile/profile_screen.dart';
 
 class MapScreen extends StatefulWidget {
   static const String routeName = "/map";
@@ -46,6 +48,20 @@ class _MapScreenState extends State<MapScreen> {
 
   List<Map<String, String>> wasteItems = [];
 
+
+  int currentSelectedIndex = 0;
+
+  void updateCurrentIndex(int index) {
+    setState(() {
+      currentSelectedIndex = index;
+    });
+  }
+
+  final List<Widget> pages = [
+    const HomeScreen(),
+    OrderHistoryScreen(),
+    const ProfileScreen(),
+  ];
   @override
   void initState() {
     super.initState();
@@ -173,7 +189,33 @@ class _MapScreenState extends State<MapScreen> {
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pop(); // Close modal
-                  Navigator.pushNamed(context, OrderHistoryScreen.routeName);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Scaffold(
+                        appBar: AppBar(title: Text('Order History')),
+                        body: OrderHistoryScreen(),
+                        bottomNavigationBar: BottomNavigationBar(
+                          currentIndex: currentSelectedIndex, // Pass the index
+                          onTap: updateCurrentIndex,
+                          items: const [
+                            BottomNavigationBarItem(
+                              icon: Icon(Icons.home),
+                              label: 'Home',
+                            ),
+                            BottomNavigationBarItem(
+                              icon: Icon(Icons.history),
+                              label: 'Order History',
+                            ),
+                            BottomNavigationBarItem(
+                              icon: Icon(Icons.person),
+                              label: 'Profile',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,

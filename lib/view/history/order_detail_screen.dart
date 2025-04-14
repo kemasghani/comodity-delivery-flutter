@@ -107,12 +107,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 Lottie.asset('assets/animations/check_payment.json',
                     width: 150),
                 SizedBox(height: 12),
-                Text("Sukses upload struk pembayaran",
+                Text("Payment slip uploaded successfully",
                     style:
                         TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 SizedBox(height: 8),
                 Text(
-                    "Harap tunggu konfirmasi dari admin dari struk pembayaran yang anda upload"),
+                    "Please wait for confirmation from the admin regarding the uploaded payment slip."),
                 SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => Navigator.pop(context),
@@ -129,72 +129,123 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Order Details')),
+      appBar: AppBar(
+        title: Text('Order Details'),
+        backgroundColor: Colors.blueAccent,
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Text("Order Details",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-            Expanded(
-              child: isLoading
+        padding: const EdgeInsets.all(20.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Order Details",
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              SizedBox(height: 20),
+              isLoading
                   ? Center(child: CircularProgressIndicator())
                   : commodities.isEmpty
                       ? Center(child: Text('No commodities found'))
-                      : ListView.builder(
-                          itemCount: commodities.length,
-                          itemBuilder: (context, index) {
-                            final commodity = commodities[index];
-                            return Card(
-                              margin: EdgeInsets.all(10),
-                              child: ListTile(
-                                title: Text(
-                                    'Commodity: ${commodity['commodity_name']}'),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Quantity: ${commodity['quantity']}'),
-                                    Text('Weight: ${commodity['weight']} kg'),
-                                    Text(
-                                        'Created at: ${commodity['created_at']}'),
-                                  ],
-                                ),
+                      : Column(
+                          children: commodities.map((commodity) {
+                            return Container(
+                              margin: EdgeInsets.symmetric(vertical: 10),
+                              padding: EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.3),
+                                    blurRadius: 10,
+                                    offset: Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Commodity: ${commodity['commodity_name']}',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text('Quantity: ${commodity['quantity']}'),
+                                  Text('Weight: ${commodity['weight']} kg'),
+                                  Text(
+                                      'Created at: ${commodity['created_at']}'),
+                                ],
                               ),
                             );
-                          },
+                          }).toList(),
                         ),
-            ),
-            SizedBox(height: 20),
-            Divider(),
-            Text("Upload Payment Slip",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-            _selectedImage != null
-                ? Column(
-                    children: [
-                      Image.file(_selectedImage!, height: 200),
-                      SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: _uploadImage,
-                        child: _isUploading
-                            ? CircularProgressIndicator()
-                            : Text("Submit"),
-                      ),
-                    ],
-                  )
-                : ElevatedButton(
-                    onPressed: _pickImage,
-                    child: Text("Choose Image"),
-                  ),
-            SizedBox(height: 20),
-            if (_uploadedImageUrl != null) ...[
-              Text("Uploaded Image:",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              SizedBox(height: 20),
+              Divider(),
               SizedBox(height: 10),
-              Image.network(_uploadedImageUrl!, height: 150),
+              Text(
+                "Upload Payment Slip",
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              SizedBox(height: 10),
+              _selectedImage != null
+                  ? Column(
+                      children: [
+                        Container(
+                          margin: EdgeInsets.only(bottom: 10),
+                          height: 200,
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: FileImage(_selectedImage!),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: _uploadImage,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueAccent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: _isUploading
+                              ? CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : Text("Submit"),
+                        ),
+                      ],
+                    )
+                  : ElevatedButton(
+                      onPressed: _pickImage,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orangeAccent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: Text("Choose Image"),
+                    ),
+              SizedBox(height: 20),
+              if (_uploadedImageUrl != null) ...[
+                Text("Uploaded Image:",
+                    style: Theme.of(context).textTheme.bodyLarge),
+                SizedBox(height: 10),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(_uploadedImageUrl!, height: 150),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
